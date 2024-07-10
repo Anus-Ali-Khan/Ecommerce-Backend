@@ -41,10 +41,12 @@ const handleLogin = async (req, res) => {
       httpOnly: true,
       sameSite: "None",
       secure: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 48 * 60 * 60 * 1000,
     });
-    res.json({ accessToken });
+    return res.json({ accessToken });
   } else {
-    res.sendStatus(401);
+    return res.sendStatus(401);
   }
 };
+
+module.exports = { handleLogin };

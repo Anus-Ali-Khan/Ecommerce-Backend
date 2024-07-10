@@ -18,6 +18,14 @@ const userSchema = new Schema({
     type: String,
     require: true,
   },
+  roles: {
+    User: {
+      type: Number,
+      default: 2001,
+    },
+    Editor: Number,
+    Admin: Number,
+  },
   refreshToken: String,
 });
 
