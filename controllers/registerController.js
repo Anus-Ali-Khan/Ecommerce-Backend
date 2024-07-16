@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const handleNewUser = async (req, res) => {
   const { user, pwd, email, phoneNo } = req.body;
@@ -22,14 +23,13 @@ const handleNewUser = async (req, res) => {
         .json({ success: false, message: "Phone number already exists." });
     }
     // Hashed Password
-    const hashedPwd = bcrypt.hash(pwd, 10);
+    const hashedPwd = await bcrypt.hash(pwd, 10);
     // User.create: create and stores new user in db
-    const newUser = User.create({
+    const newUser = await User.create({
       username: user,
       email: email,
       password: hashedPwd,
       phoneNo: phoneNo,
-      refreshToken: refreshToken,
     });
     // create jwts
     const accessToken = jwt.sign(
@@ -45,8 +45,10 @@ const handleNewUser = async (req, res) => {
     const refreshToken = jwt.sign(
       { username: newUser.email },
       process.env.REFRESH_TOKEN_SECRET,
-      { expireIn: "2d" }
+      { expiresIn: "2d" }
     );
+    newUser.refreshToken = refreshToken;
+    await newUser.save();
     res.status(201).json({
       success: true,
       message: `New user ${user} created!`,
@@ -61,7 +63,7 @@ const handleNewUser = async (req, res) => {
       maxAge: 48 * 60 * 60 * 1000,
     });
   } catch (err) {
-    return res.sendStatus(500).json({
+    return res.status(500).json({
       message: "Internal server error",
       success: false,
       error: err.message,

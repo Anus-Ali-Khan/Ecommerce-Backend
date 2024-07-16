@@ -21,10 +21,11 @@ const verifyJWT = async (req, res, next) => {
     }
     // set user object in req
     req.user = existingUser;
-
     next();
   } catch (err) {
     console.log("Error:", err.message);
     res.status(403).json({ message: "Invalid token", success: false });
   }
 };
+
+module.exports = verifyJWT;

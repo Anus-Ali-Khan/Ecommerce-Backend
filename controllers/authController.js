@@ -44,6 +44,7 @@ const handleLogin = async (req, res) => {
         secure: true,
         maxAge: 48 * 60 * 60 * 1000,
       });
+      user.password = "Hidden Mystery";
 
       return res.json({ success: true, accessToken, user });
     } else {
