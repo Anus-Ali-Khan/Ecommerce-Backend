@@ -30,7 +30,7 @@ const userSchema = new Schema({
   roles: {
     type: [String],
     default: ["user"],
-    enum: ["user", "admin"],
+    enum: ["user", "admin"], // enum is used to store constant values other than nothing is accepted
   },
 
   refreshToken: String,

@@ -27,8 +27,10 @@ const productSchema = new Schema({
     type: Boolean,
     require: true,
   },
-  bidEndTime: {
-    type: Date,
-    require: true,
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
   },
 });
+
+module.exports = mongoose.model("Product", productSchema);
