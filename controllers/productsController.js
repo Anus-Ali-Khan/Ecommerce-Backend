@@ -2,16 +2,24 @@ const Product = require("../models/Product");
 
 //Get Products
 const getAllProducts = async (req, res) => {
-  const products = await Product.find();
-  if (!products) {
-    return res.status(204).json({ message: "No products found." });
+  try {
+    const products = await Product.find();
+    if (!products) {
+      return res.status(204).json({ message: "No products found." });
+    }
+    res.json({ success: true, products });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
-  res.json(products);
 };
 
 //Create Product
 const createNewProduct = async (req, res) => {
-  // Checking the body params spelling mistakes
+  // Checking the body params that are allowed
   const params = Object.keys(req.body);
   const allowedParams = [
     "name",
@@ -91,4 +99,64 @@ const createNewProduct = async (req, res) => {
   }
 };
 
-module.exports = { getAllProducts, createNewProduct };
+// Update or Edit Product
+const updateProduct = async (req, res) => {
+  // Checking allowed params
+  const params = Object.keys(req.body);
+  const allowedParams = [
+    "name",
+    "price",
+    "description",
+    "category",
+    "image",
+    "isFeatured",
+  ];
+
+  const isValidParams = params
+    .map((param) => {
+      if (allowedParams.includes(param)) {
+        return { name: param, success: true };
+      } else {
+        return { name: param, succes: false };
+      }
+    })
+    .find((val) => val.status === false);
+
+  if (isValidParams) {
+    res.status(400).json({
+      sucess: false,
+      message: `Invalid parameter ${isValidParams.name}`,
+    });
+  }
+
+  try {
+    if (!req?.body?.id) {
+      return res.status(400).json({ message: "ID parameter is required." });
+    }
+
+    const product = await Product.findOne({ _id: req.body.id }).exec();
+    if (!product) {
+      return res
+        .status(204)
+        .json({ message: `No Employee matches ID ${req.body.id}.` });
+    }
+
+    const updatedProduct = Product.findByIdAndUpdate(req.body.id, {
+      ...product,
+      ...req.body,
+    });
+    return res.json({
+      success: true,
+      updatedProduct,
+      message: "Product updated successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+module.exports = { getAllProducts, createNewProduct, updateProduct };

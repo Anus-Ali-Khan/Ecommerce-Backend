@@ -7,6 +7,7 @@ const verifyRoles = require("../../middlewares/verifyRoles");
 router
   .route("/")
   .get(productsController.getAllProducts)
-  .post(productsController.createNewProduct);
+  .post(productsController.createNewProduct)
+  .put(productsController.updateProduct);
 
 module.exports = router;
