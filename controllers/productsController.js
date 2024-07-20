@@ -104,6 +104,7 @@ const updateProduct = async (req, res) => {
   // Checking allowed params
   const params = Object.keys(req.body);
   const allowedParams = [
+    "productId",
     "name",
     "price",
     "description",
@@ -115,9 +116,9 @@ const updateProduct = async (req, res) => {
   const isValidParams = params
     .map((param) => {
       if (allowedParams.includes(param)) {
-        return { name: param, success: true };
+        return { name: param, status: true };
       } else {
-        return { name: param, succes: false };
+        return { name: param, status: false };
       }
     })
     .find((val) => val.status === false);
@@ -130,21 +131,23 @@ const updateProduct = async (req, res) => {
   }
 
   try {
-    if (!req?.body?.id) {
+    if (!req?.body?.productId) {
       return res.status(400).json({ message: "ID parameter is required." });
     }
 
-    const product = await Product.findOne({ _id: req.body.id }).exec();
+    const product = await Product.findOne({ _id: req.body.productId }).exec();
     if (!product) {
       return res
         .status(204)
         .json({ message: `No Employee matches ID ${req.body.id}.` });
     }
 
-    const updatedProduct = Product.findByIdAndUpdate(req.body.id, {
-      ...product,
-      ...req.body,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      { _id: req.body.productId },
+      { ...req.body },
+      { new: true }
+    );
+
     return res.json({
       success: true,
       updatedProduct,
@@ -159,4 +162,36 @@ const updateProduct = async (req, res) => {
   }
 };
 
-module.exports = { getAllProducts, createNewProduct, updateProduct };
+// Delete Product
+const deleteProduct = async (req, res) => {
+  if (!req?.body?.id) {
+    return res.status(400).json({ message: "Product ID required." });
+  }
+  try {
+    const product = await Product.findOne({ _id: req.body.id }).exec();
+    if (!product) {
+      return res
+        .status(204)
+        .json({ message: `No product matches ID ${req.body.id}` });
+    }
+    const deletedProduct = await product.deleteOne({ _id: req.body.id });
+    res.json({
+      success: true,
+      product,
+      message: "Product deleted successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+module.exports = {
+  getAllProducts,
+  createNewProduct,
+  updateProduct,
+  deleteProduct,
+};

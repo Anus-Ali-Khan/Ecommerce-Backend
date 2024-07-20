@@ -21,9 +21,6 @@ app.use("/refresh", require("./routes/refresh"));
 
 //product routes
 app.use("/products", verifyJWT, require("./routes/api/productRoutes"));
-app.use("/products", verifyJWT, require("./routes/api/productRoutes"));
-app.use("/products", verifyJWT, require("./routes/api/productRoutes"));
-app.use("/products", verifyJWT, require("./routes/api/productRoutes"));
 
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
