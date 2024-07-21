@@ -189,9 +189,31 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const getSingleProduct = async (req, res) => {
+  if (!req?.params?.id) {
+    return res.status(400).json({ message: "Product ID required." });
+  }
+  try {
+    const product = await Product.findOne({ _id: req.params.id }).exec();
+    if (!product) {
+      return res
+        .status(204)
+        .json({ message: `No product matches ID ${req.params.id}` });
+    }
+    res.json({ success: true, product });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 module.exports = {
   getAllProducts,
   createNewProduct,
   updateProduct,
   deleteProduct,
+  getSingleProduct,
 };

@@ -22,6 +22,9 @@ app.use("/refresh", require("./routes/refresh"));
 //product routes
 app.use("/products", verifyJWT, require("./routes/api/productRoutes"));
 
+//user routes
+app.use("/favourites", verifyJWT, require("./routes/api/userRoutes"));
+
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

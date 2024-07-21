@@ -9,6 +9,8 @@ router
   .get(productsController.getAllProducts)
   .post(productsController.createNewProduct)
   .put(productsController.updateProduct)
-  .delete(productsController.deleteProduct);
+  .delete(verifyRoles(ROLES_LIST.Admin), productsController.deleteProduct);
+
+router.route("/:id").get(productsController.getSingleProduct);
 
 module.exports = router;
