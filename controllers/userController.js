@@ -23,18 +23,45 @@ const userFavouriteProducts = async (req, res) => {
       { new: true }
     );
 
-    res.json({
+    return res.json({
       success: true,
       currentUser,
       message: "Successfully updated favourites",
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Intenal Server Error",
     });
   }
 };
 
-module.exports = { userFavouriteProducts };
+//Update User
+const updateUser = async (req, res) => {
+  const { name, image, email, phoneNo } = req.body;
+  if (!name || !image || !email || !phoneNo) {
+    return res.status(400).json({ message: "Please provide valid fields." });
+  }
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, image, email, phoneNo }, // it replaces the old parameters with new parameters that we passed in body
+      { new: true }
+    );
+    return res.json({
+      success: true,
+      updatedUser,
+      message: "User updated successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Intenal Server Error",
+    });
+  }
+};
+
+module.exports = { userFavouriteProducts, updateUser };

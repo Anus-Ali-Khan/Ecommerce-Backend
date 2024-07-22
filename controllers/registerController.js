@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const handleNewUser = async (req, res) => {
-  const { user, pwd, email, phoneNo } = req.body;
+  const { user, pwd, email, phoneNo, image } = req.body;
   if (!user || !pwd || !email || !phoneNo) {
     return res.status(400).json({ message: "Please provide all fields." });
   }
@@ -30,6 +30,7 @@ const handleNewUser = async (req, res) => {
       email: email,
       password: hashedPwd,
       phoneNo: phoneNo,
+      image: image ? image : "",
     });
     // create jwts
     const accessToken = jwt.sign(
