@@ -4,10 +4,13 @@ const Schema = mongoose.Schema;
 const bidSchema = new Schema(
   {
     bidAmounts: [
-      { price: String, userId: Schema.Types.ObjectId, require: true },
+      {
+        price: { type: String, require: true },
+        userId: { type: Schema.Types.ObjectId, ref: "User", require: true },
+      },
     ],
     startTime: {
-      type: Date.now(),
+      type: Date,
       require: true,
     },
     endTime: {
@@ -18,10 +21,6 @@ const bidSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Product",
       require: true,
-    },
-    userId: {
-      type: [Schema.Types.ObjectId],
-      ref: "User",
     },
   },
   { timestamps: true }

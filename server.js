@@ -25,6 +25,9 @@ app.use("/products", verifyJWT, require("./routes/api/productRoutes"));
 //user routes
 app.use("/user", verifyJWT, require("./routes/api/userRoutes"));
 
+//bid routes
+app.use("/bid", verifyJWT, require("./routes/api/bidRoutes"));
+
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
