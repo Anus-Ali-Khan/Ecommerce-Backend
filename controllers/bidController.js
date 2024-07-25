@@ -11,20 +11,29 @@ const createNewBid = async (req, res) => {
   }
 
   try {
-    const product = Product.findById(productId).exec();
+    const product = await Product.findById(productId).exec(); // find by id only works on _id(which is mongodb built in)
     if (product) {
-      const newBid = await Bid.create({
-        bidAmounts: [{ price: bidPrice, userId: req.user.id }],
-        startTime: startTime,
-        endTime: endTime,
-        productId: productId,
-      });
-      await newBid.save();
-      return res.status(201).json({
-        success: true,
-        newBid,
-        message: `Bid on product ${productId} has placed successfully`,
-      });
+      const biddedProduct = await Bid.findOne({ productId: productId }).exec(); // to find document with your own referencr use find() or findOne() method
+      console.log(biddedProduct);
+      if (!biddedProduct) {
+        const newBid = await Bid.create({
+          bidAmounts: [{ price: bidPrice, userId: req.user.id }],
+          startTime: startTime,
+          endTime: endTime,
+          productId: productId,
+        });
+        await newBid.save();
+        return res.status(201).json({
+          success: true,
+          newBid,
+          message: `Bid on product ${productId} has placed successfully`,
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "You have already bidded on this product",
+        });
+      }
     } else {
       return res.status(400).json({
         success: false,
@@ -41,4 +50,72 @@ const createNewBid = async (req, res) => {
   }
 };
 
-module.exports = { createNewBid };
+// update Bid List
+const updateBidList = async (req, res) => {
+  //Checking Allowed Params
+  const params = Object.keys(req.body);
+  const allowedParams = ["productId", "endTime", "bidPrice"];
+
+  const isValidParams = params
+    .map((param) => {
+      if (allowedParams.includes(param)) {
+        return { name: param, status: true };
+      } else {
+        return { name: param, status: false };
+      }
+    })
+    .find((val) => val.status === false);
+
+  if (isValidParams) {
+    res.status(400).json({
+      success: false,
+      message: `Inavlid parameter ${isValidParams.name}`,
+    });
+  }
+
+  try {
+    if (!req.body?.productId) {
+      return res.status(400).json({ message: "ID parameter is required" });
+    }
+
+    const product = await Product.findOne({
+      productId: req.body.productId,
+    }).exec();
+    if (!product) {
+      return res
+        .status(204)
+        .json({ message: `No product matches ID ${req.body.productId}.` });
+    }
+
+    const bid = await Bid.findOne({ productId: req.body.productId });
+    if (bid) {
+      const updatedBid = await Bid.findOneAndUpdate(
+        { productId: req.body.productId },
+        {
+          endTime: req.body.endTime,
+          bidAmounts: bidAmounts
+            .filter((item) => item.userId === req.user.id)
+            .map((obj) => obj.price === bidprice),
+        },
+        { new: true }
+      );
+      return res.json({
+        success: true,
+        updatedBid,
+        message: "Bid updated successfully",
+      });
+    } else {
+      return res.json({
+        message: `This product ${req.body.productId} has not been bidded yet.`,
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+module.exports = { createNewBid, updateBidList };
