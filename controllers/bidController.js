@@ -14,7 +14,7 @@ const createNewBid = async (req, res) => {
     const product = await Product.findById(productId).exec(); // find by id only works on _id(which is mongodb built in)
     if (product) {
       const biddedProduct = await Bid.findOne({ productId: productId }).exec(); // to find document with your own referencr use find() or findOne() method
-      console.log(biddedProduct);
+      // console.log(biddedProduct);
       if (!biddedProduct) {
         const newBid = await Bid.create({
           bidAmounts: [{ price: bidPrice, userId: req.user.id }],
@@ -67,19 +67,19 @@ const updateBidList = async (req, res) => {
     .find((val) => val.status === false);
 
   if (isValidParams) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: `Inavlid parameter ${isValidParams.name}`,
     });
   }
 
   try {
-    if (!req.body?.productId) {
+    if (!req?.body?.productId) {
       return res.status(400).json({ message: "ID parameter is required" });
     }
 
     const product = await Product.findOne({
-      productId: req.body.productId,
+      _id: req.body.productId,
     }).exec();
     if (!product) {
       return res
@@ -87,15 +87,21 @@ const updateBidList = async (req, res) => {
         .json({ message: `No product matches ID ${req.body.productId}.` });
     }
 
-    const bid = await Bid.findOne({ productId: req.body.productId });
+    const bid = await Bid.findOne({ productId: req.body.productId }).lean();
     if (bid) {
+      const updatedBidPrice = bid.bidAmounts.map((obj) => {
+        if (String(obj.userId) === req.user.id) {
+          return { ...obj, price: req.body.bidPrice };
+        } else {
+          return obj;
+        }
+      });
+
       const updatedBid = await Bid.findOneAndUpdate(
         { productId: req.body.productId },
         {
           endTime: req.body.endTime,
-          bidAmounts: bidAmounts
-            .filter((item) => item.userId === req.user.id)
-            .map((obj) => obj.price === bidprice),
+          bidAmounts: updatedBidPrice,
         },
         { new: true }
       );
@@ -115,6 +121,21 @@ const updateBidList = async (req, res) => {
       success: false,
       message: "Internal Server Error",
     });
+  }
+};
+
+// Delete Bid
+const deleteBid = async (req, res) => {
+  const { bidId } = req.body;
+
+  if (!bidId) {
+    return res.status(400).json({ message: "Product ID required" });
+  }
+
+  try {
+    // const bid =
+  } catch (err) {
+    console.error(err);
   }
 };
 
