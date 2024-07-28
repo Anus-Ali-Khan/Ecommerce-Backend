@@ -28,7 +28,30 @@ const createNewBid = async (req, res) => {
           newBid,
           message: `Bid on product ${productId} has placed successfully`,
         });
-      } else {
+      }
+
+      const bidByCurrentUser = biddedProduct.bidAmounts.filter(
+        (item) => item.userId == req.user.id
+      );
+
+      if (bidByCurrentUser.length === 0) {
+        const bidAmounts = [
+          ...biddedProduct.bidAmounts,
+          { price: bidPrice, userId: req.user.id },
+        ];
+        const updateBid = await Bid.findOneAndUpdate(
+          { productId: productId },
+          { bidAmounts: bidAmounts },
+          { new: true }
+        );
+        return res.status(201).json({
+          success: true,
+          updateBid,
+          message: `Bid on product ${productId} has placed successfully`,
+        });
+      }
+
+      if (bidByCurrentUser.length) {
         res.status(400).json({
           success: false,
           message: "You have already bidded on this product",
@@ -146,15 +169,12 @@ const deleteBid = async (req, res) => {
       bidAmounts = bidAmounts.filter((item) => item != deleteBid[0]);
     }
 
-    // console.log("delte", deleteBid);
-    // console.log("hjklhjl", bidAmounts);
-
     const updatedBidAmounts = Bid.findOneAndUpdate(
       { productId: productId },
       { bidAmounts: bidAmounts },
       { new: true }
     ).exec();
-    // console.log(updatedBidAmounts);
+
     res.json({
       success: true,
       deleteBid,
@@ -169,4 +189,21 @@ const deleteBid = async (req, res) => {
   }
 };
 
-module.exports = { createNewBid, updateBidList, deleteBid };
+//Get All Bids
+const getAllBids = async (req, res) => {
+  try {
+    const bids = await Bid.find();
+    if (!bids) {
+      return res.status(204).json({ message: "No bid found." });
+    }
+    res.json({ success: true, bids });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+module.exports = { createNewBid, updateBidList, deleteBid, getAllBids };
