@@ -126,17 +126,47 @@ const updateBidList = async (req, res) => {
 
 // Delete Bid
 const deleteBid = async (req, res) => {
-  const { bidId } = req.body;
+  const { productId } = req.body;
 
-  if (!bidId) {
+  if (!productId) {
     return res.status(400).json({ message: "Product ID required" });
   }
 
   try {
-    // const bid =
+    //aggregate pipelines are used to fetch data from array of objects in MongoDB Schema
+    // const bid = Bid.aggregate([
+    //   { $unwind: "$bidAmounts" },
+    //   { $match: { "bidAmounts._id": bidId } },
+    // ]);
+    const bid = await Bid.findOne({ productId: productId }).exec();
+    let bidAmounts = [...bid.bidAmounts];
+
+    const deleteBid = bidAmounts.filter((item) => item.userId == req.user.id);
+    if (deleteBid) {
+      bidAmounts = bidAmounts.filter((item) => item != deleteBid[0]);
+    }
+
+    // console.log("delte", deleteBid);
+    // console.log("hjklhjl", bidAmounts);
+
+    const updatedBidAmounts = Bid.findOneAndUpdate(
+      { productId: productId },
+      { bidAmounts: bidAmounts },
+      { new: true }
+    ).exec();
+    // console.log(updatedBidAmounts);
+    res.json({
+      success: true,
+      deleteBid,
+      message: "Bid has deleted successfully",
+    });
   } catch (err) {
     console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
 
-module.exports = { createNewBid, updateBidList };
+module.exports = { createNewBid, updateBidList, deleteBid };
