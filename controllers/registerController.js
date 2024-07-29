@@ -52,15 +52,15 @@ const handleNewUser = async (req, res) => {
     await newUser.save();
     res.status(201).json({
       success: true,
+      accessToken,
       message: `New user ${user} created!`,
       newUser,
-      accessToken,
     });
     //Since it is not secure to save refresh token in local storage so we are saving it as a cookie and as http only because http is not available to javascript
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       sameSite: "None",
-      secure: true,
+      // secure: true, In productiopn we also need this but not in postman
       maxAge: 48 * 60 * 60 * 1000,
     });
   } catch (err) {

@@ -206,4 +206,61 @@ const getAllBids = async (req, res) => {
   }
 };
 
-module.exports = { createNewBid, updateBidList, deleteBid, getAllBids };
+//Get Single Bid
+const getSingleBid = async (req, res) => {
+  const { productId } = req.params;
+  if (!productId) {
+    res.status(400).json({ message: "ID parameter is required." });
+  }
+  try {
+    const bid = await Bid.findOne({ productId: productId }).exec();
+    if (!bid) {
+      return res
+        .status(204)
+        .json({ message: `No bid matches ID ${productId}` });
+    }
+    res.json({ success: true, bid });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// User bidded products
+const userBiddedProducts = async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    return res.status(400).json({ message: "ID parameter is required." });
+  }
+  try {
+    // query to find userId inside array of objects
+    const userBiddedProducts = await Bid.find({
+      "bidAmounts.userId": userId,
+    }).exec();
+    if (!userBiddedProducts) {
+      res.status(204).message({
+        succes: false,
+        message: `This user ${userId} has not bidded yet.`,
+      });
+    }
+    res.json({ success: true, userBiddedProducts });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+module.exports = {
+  createNewBid,
+  updateBidList,
+  deleteBid,
+  getAllBids,
+  getSingleBid,
+  userBiddedProducts,
+};

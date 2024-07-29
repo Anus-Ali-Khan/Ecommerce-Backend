@@ -50,6 +50,11 @@ const updateUser = async (req, res) => {
       { name, image, email, phoneNo }, // it replaces the old parameters with new parameters that we passed in body
       { new: true }
     );
+    // if (!updatedUser.id) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: `User ${name} is not logged in.` });
+    // }
     return res.json({
       success: true,
       updatedUser,

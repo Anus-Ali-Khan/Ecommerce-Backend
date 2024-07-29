@@ -3,6 +3,9 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const credentials = require("./middlewares/credentials");
+const corsOptions = require("./config/corsOptions");
 const connectDB = require("./config/dbConn");
 const verifyJWT = require("./middlewares/verifyJWT");
 const PORT = process.env.PORT || 3500;
@@ -10,7 +13,11 @@ const PORT = process.env.PORT || 3500;
 //Connect to Mongo DB
 connectDB();
 
+app.use(credentials);
+
 app.use(express.json());
+
+app.use(cors(corsOptions));
 
 app.use(cookieParser());
 
